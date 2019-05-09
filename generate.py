@@ -1,10 +1,16 @@
-from random import choice
+from random import choice, randint
 
 class Generate():
 
-    def __init__(self):
+    EASY = [4,5,6,8]
+    MEDIUM = [5,6,7,9]
+    HARD = [7,8,9]
+
+    def __init__(self, dificulty):
         self.grid = []
+        self.game_grid = []
         self.failures = 0
+        self.dificulty = dificulty
 
     def generate_grid(self):
         i=0
@@ -57,5 +63,19 @@ class Generate():
 
         return row
 
+    def sample(self, iterable, n):
+        reservoir = []
+        for t, item in enumerate(iterable):
+            if t < n:
+                reservoir.append(item)
+            else:
+                m = randint(0,t)
+                if m < n:
+                    reservoir[m] = item
+        return reservoir
+
     def setup_game_grid(self):
-        pass
+        for row in self.grid:
+            sample = self.sample(row,choice(self.dificulty))
+            game_row = [i if i not in sample else 0 for i in row]
+            self.game_grid.append(game_row)
