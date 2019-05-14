@@ -4,26 +4,48 @@ class Solve():
 
     def __init__(self,grid):
         self.grid = grid
-        self.inverse = []
-        self.slim_inverse = []
-        self.merged = []
         self.choices = {}
 
     def solve(self):
-        for i in range(1000):
-            self.add_to_grid()
+        """
+        Solve the puzzle by looping over the rules engine n times
+        until a solved puzzled is produced or the puzzle cannot have
+        further progress made.
+        returns boolean
+        """
+        for i in range(100):
+            self.rules()
             if not self.choices: return self.solved()
         return False
 
-    def add_to_grid(self):
+    def rules(self):
+        """
+        Rules engine to determine whether
+        the number fits within it's box
+        """
         self.generate_choices()
         for r,c in self.choices:
-            if self.grid[r][c] != 0:
-                self.choices[(r,c)] = []
+            """
+            RULE 1
+            is there is only one choice?
+            """
             if len(self.choices[(r,c)]) == 1:
                 self.grid[r][c] = self.choices[(r,c)][0]
+            """
+            RULE 2
+            is there a unique choice amongst the row,
+            column and square in this list?
+            """
+            unique = self.unique_choice(r,c)
+            if unique:
+                self.grid[r][c] = unique[0]
+
 
     def generate_choices(self):
+        """
+        Generates a dictionary of possible choices
+        for each remaining position on the grid
+        """
         self.choices = {}
         for row_pos,row in enumerate(self.grid):
             for col_pos,col in enumerate(row):
@@ -33,17 +55,25 @@ class Solve():
                     inverse = list(set(range(1,10))-unique)
                     self.choices[(row_pos,col_pos)] = inverse
 
-    def get_inverse(self):
-        for i, row in enumerate(self.grid):
-            inv_row = list(set(range(1,10))-set(row))
-            self.inverse.append([inv_row.pop() if j == 0 else 0 for j in row])
-            self.slim_inverse.append(list(set(range(1,10))-set(row)))
+    def unique_choice(self,row,col):
+        """
+        return a list of unique choices amongst the
+        row, column and square for a given position
+        return list
+        """
+        position = self.choices[(row,col)]
+        unique = []
+        unique += self.unique_row(row,col)
+        unique += self.unique_column(row,col)
+        unique += self.unique_square(row,col)
 
-    def add_grids(self):
-        for i, row in enumerate(self.grid):
-            self.merged.append([n+self.inverse[i][j] for j,n in enumerate(row)])
+        return [i for i in position if i not in unique]
 
     def solved(self):
+        """
+        Checks to see if the puzzle has been solved correctly
+        return boolean
+        """
         for i, row in enumerate(self.grid):
             if not self.is_unique(row): return False
 
@@ -75,3 +105,32 @@ class Solve():
         for i in range(3):
             square += self.grid[(row_start+i)][col_start:col_end]
         return square
+
+    def unique_row(self,row,col):
+        rows = []
+        for r in range(9):
+            if r != row:
+                if (r,col) in self.choices:
+                    rows += self.choices[(r,col)]
+        return list(set(rows))
+
+    def unique_column(self,row,col):
+        columns = []
+        for c in range(9):
+            if c != col:
+                if (row,c) in self.choices:
+                    columns += self.choices[(row,c)]
+        return list(set(columns))
+
+    def unique_square(self,row,col):
+        col_start = col - col % 3
+        row_start = row - row % 3
+        squares = []
+        for r in range(3):
+            for c in range(3):
+                rs = row_start+r
+                cs = col_start+c
+                if rs != row and cs != col:
+                    if (rs,cs) in self.choices:
+                        squares += self.choices[(rs,cs)]
+        return list(set(squares))

@@ -41,3 +41,6 @@ for row in solver.grid:
     print(f"| {' | '.join([str(i) if i != 0 else ' ' for i in row])} |")
 
 print("|-----------|-----------|-----------|")
+
+# for r,c in solver.choices:
+#     print(f"({r},{c}): {solver.choices[(r,c)]}")
